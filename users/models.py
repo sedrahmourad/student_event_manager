@@ -1,26 +1,41 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
-class CustomeUser(AbstractUser):
-    # add extra fields
-    pass
 
-#student profile linked to custom user
+# define user roles
+class UserRole(models.TextChoices):
+    STUDENT = 'student', _('Student')
+    ORGANIZER = 'organizer', _('Organizer')
 
-class student(models.Model):
-    user = models.OneToOneField(CustomeUser, on_delete=models.CASCADE, related_name="student_profile")
-    grade = models.CharField(max_length=50, blank=True, null=True)
-    school_name = models.CharField(max_length=100, blank=True, null=True)
-
+# custom user model extending abstract user
+class CustomUser(AbstractUser):
+    # role field 
+    role = models.CharField(
+        max_length=100,
+        choices=UserRole.choices,
+        default=UserRole.STUDENT,
+        verbose_name='Role'
+    )
+    # student specific field (major)
+    major = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Major/Interest Area'
+    )
+    # organizer specific field 
+    organization_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Organization Name'
+    )
+    name = models.CharField(max_length=200, verbose_name='Full Name')
     def __str__(self):
-        return f"student: {self.user.username}"
+        return f"{self.username} ({self.get_role_display()})"
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 
-# Organizer profile linked to CustomUser
-class Organizer(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="organizer_profile")
-    organization_name = models.CharField(max_length=100)
-    position = models.CharField(max_length=50, blank=True, null=True)  # e.g., Event Manager, Coordinator
-
-    def __str__(self):
-        return f"Organizer: {self.user.username}"

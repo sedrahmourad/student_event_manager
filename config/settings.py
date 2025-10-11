@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'events',
     'users',
+    'registration',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -122,3 +125,31 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
+# settings.py
+
+REST_FRAMEWORK = {
+    # Sets TokenAuthentication as the default way to verify users for all endpoints
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        # You might keep SessionAuthentication for browser/admin access during development
+        'rest_framework.authentication.SessionAuthentication', 
+    ),
+    
+    # Sets the default permission level. 
+    # This is a sensible default: allow reading (GET), but require login (POST, PUT, DELETE)
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    
+    # Configuration for filtering (useful for the events app)
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter', 
+    ],
+    
+    # Optional: Basic Pagination setup for list views (like /api/events/)
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 15,
+}
