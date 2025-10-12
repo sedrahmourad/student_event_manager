@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ValidationError
 
-User = get_user_model
+User = get_user_model()
 
 # registration serializer 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -48,11 +48,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         # For simplicity, we will use the email as the username if not provided,
 
         password = validated_data.pop('password')
+        email = validated_data.pop('email')
         
         # Use create_user to ensure the password is correctly hashed
         user = get_user_model().objects.create_user(
-            username=validated_data.get('email'), # Use email as a unique identifier for username
-            email=validated_data.get('email'),
+            username=email, # Use email as a unique identifier for username
+            email=email,
             password=password,
             **validated_data
         )
