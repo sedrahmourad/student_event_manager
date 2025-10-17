@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import  os 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,7 +61,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -144,6 +145,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    # Use the Serializer to perform validation on POST/PUT/PATCH/DELETE
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ),
     
     # Configuration for filtering (useful for the events app)
     'DEFAULT_FILTER_BACKENDS': [
@@ -154,3 +161,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 15,
 }
+# 3. EMAIL CONFIGURATION (For Development/Testing)
+# Prints all emails to the console/terminal window.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'no-reply@studenteventmanager.com'
+
+# For Production (Part 5), you would replace the above two lines with:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.example.com' 
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True 
+# EMAIL_HOST_USER = 'your-smtp-username'
+# EMAIL_HOST_PASSWORD = 'your-smtp-password'

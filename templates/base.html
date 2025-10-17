@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Event Manager{% endblock title %}</title>
+    <!-- Basic Tailwind CSS CDN for quick styling (for demonstration) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
+        .card { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-indigo-700 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-white text-2xl font-bold tracking-wider">
+                        Activity Manager
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Navigation links will be dynamically populated by JavaScript in a real app -->
+                    <a href="{% url 'events:event-list' %}" class="text-indigo-200 hover:text-white transition duration-150">Events</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'users:dashboard' %}" class="text-indigo-200 hover:text-white transition duration-150">Dashboard</a>
+                        <a href="{% url 'users:logout' %}" class="px-3 py-1 bg-white text-indigo-700 rounded-full font-semibold hover:bg-indigo-100 transition duration-150">Logout</a>
+                    {% else %}
+                        <a href="{% url 'users:login' %}" class="text-indigo-200 hover:text-white transition duration-150">Login</a>
+                        <a href="{% url 'users:register' %}" class="px-3 py-1 bg-amber-400 text-indigo-700 rounded-full font-semibold hover:bg-amber-300 transition duration-150">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Block -->
+    <main class="flex-grow p-4 sm:p-6 lg:p-8">
+        {% block content %}
+        <!-- Content from the specific page template goes here -->
+        {% endblock content %}
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center p-4">
+        <p>&copy; 2025 Activity Manager. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -8,6 +8,7 @@ class Event(models.Model):
     description = models.TextField()
     location = models.CharField(max_length=255)
     date = models.DateTimeField()
+    end_date = models.DateTimeField(verbose_name='End Time') #required for google calender api
     category = models.CharField(max_length=100)
     # foreign key to the organizer
     organizer = models.ForeignKey(
