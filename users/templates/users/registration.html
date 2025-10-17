@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Student Event Manager{% endblock title %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-10 p-8 bg-white card rounded-xl shadow-2xl">
+    <!-- Header moved into a light pink box -->
+    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 tracking-tight text-center">
+            Join the Student Hub
+        </h2>
+    </div>
+    
+    <p class="text-center text-gray-600 mb-8">
+        Create your account to discover events tailored to your major or organization.
+    </p>
+
+    <!-- Form for Registration -->
+    <form id="register-form" method="post" class="space-y-5">
+        {% csrf_token %}
+        
+        <div class="flex space-x-4">
+            <div class="w-1/2">
+                <label for="role" class="block text-sm font-semibold text-gray-700 mb-1">Account Type</label>
+                <select id="role" name="role" required 
+                    class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+                    <option value="student">Student</option>
+                    <option value="organizer">Organizer</option>
+                </select>
+            </div>
+            <div class="w-1/2">
+                <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Full Name / Organization Name</label>
+                <input type="text" id="name" name="name" required 
+                    class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+            </div>
+        </div>
+
+        <div>
+            <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+            <input type="email" id="email" name="email" required 
+                class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+        </div>
+
+        <div>
+            <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+            <input type="password" id="password" name="password" required 
+                class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+        </div>
+
+        <!-- Role-specific fields (handled by JS in a real app, mock setup here) -->
+        <div id="student-fields">
+            <label for="major" class="block text-sm font-semibold text-gray-700 mb-1">Major/Interest Area</label>
+            <input type="text" id="major" name="major" placeholder="e.g., Computer Science, Literature"
+                class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+        </div>
+        
+        <div id="organizer-fields" class="hidden">
+            <label for="organization_name" class="block text-sm font-semibold text-gray-700 mb-1">Organization Name</label>
+            <input type="text" id="organization_name" name="organization_name" 
+                class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out">
+        </div>
+
+        <button type="submit" 
+            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-bold text-white 
+                   bg-indigo-600 hover:bg-indigo-700 
+                   focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500/50 transition duration-300 ease-in-out transform hover:scale-[1.01]">
+            Create Account
+        </button>
+    </form>
+
+    <p class="mt-8 text-center text-sm text-gray-600">
+        Already registered? 
+        <a href="{% url 'users:login' %}" class="font-bold text-indigo-600 hover:text-indigo-500 transition duration-150">Log in here</a>
+    </p>
+</div>
+
+<!-- Simple JS to toggle fields based on role selection -->
+<script>
+    document.getElementById('role').addEventListener('change', function() {
+        var isStudent = this.value === 'student';
+        document.getElementById('student-fields').style.display = isStudent ? 'block' : 'none';
+        document.getElementById('organizer-fields').style.display = isStudent ? 'none' : 'block';
+    });
+    // Initialize based on default value
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('role').dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock content %}

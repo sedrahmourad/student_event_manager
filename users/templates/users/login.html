@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Student Event Manager{% endblock title %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-20">
+    <div class="bg-gray-800 p-10 rounded-xl shadow-2xl card border-t-4 border-indigo-500">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h2 class="text-4xl font-extrabold text-white tracking-tight mb-2">
+                Welcome Back
+            </h2>
+            <p class="text-indigo-300 text-lg">Sign in to access your dashboard.</p>
+        </div>
+
+        <!-- Form for Login -->
+        <form id="login-form" method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="email" class="block text-sm font-semibold text-indigo-300 mb-1">Email Address</label>
+                <input type="email" id="email" name="email" required 
+                    class="mt-1 block w-full border border-gray-700 bg-gray-700 rounded-lg shadow-sm p-3 text-white 
+                           focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out placeholder-gray-400">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-semibold text-indigo-300 mb-1">Password</label>
+                <input type="password" id="password" name="password" required 
+                    class="mt-1 block w-full border border-gray-700 bg-gray-700 rounded-lg shadow-sm p-3 text-white 
+                           focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out placeholder-gray-400">
+            </div>
+
+            <button type="submit" 
+                class="w-full flex justify-center py-3 px-4 rounded-lg shadow-xl text-lg font-bold text-white 
+                       bg-indigo-600 hover:bg-indigo-500 
+                       focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500/50 transition duration-300 ease-in-out transform hover:scale-[1.01]">
+                Log In
+            </button>
+        </form>
+
+        <p class="mt-6 text-center text-sm text-gray-400">
+            New to StudentHub? 
+            <a href="{% url 'users:register' %}" class="font-bold text-indigo-400 hover:text-indigo-300 transition duration-150">Register an account</a>
+        </p>
+    </div>
+</div>
+{% endblock content %}
