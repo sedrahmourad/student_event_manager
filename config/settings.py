@@ -44,13 +44,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+     # ... (Django Security Middleware should be first)
+    'corsheaders.middleware.CorsMiddleware', # 2. Add CorsMiddleware here (after SecurityMiddleware)
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -61,10 +65,11 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -123,13 +128,13 @@ USE_TZ = True
 
 # 1. Tell Django where to look for static files during development
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    BASE_DIR / "static",
 ]
 
 # 2. Tell Django where to collect static files (required for production/deployment)
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -145,13 +150,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         # You might keep SessionAuthentication for browser/admin access during development
-        'rest_framework.authentication.SessionAuthentication', 
+        #'rest_framework.authentication.SessionAuthentication', 
     ),
     
     # Sets the default permission level. 
     # This is a sensible default: allow reading (GET), but require login (POST, PUT, DELETE)
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ),
     # Use the Serializer to perform validation on POST/PUT/PATCH/DELETE
     'DEFAULT_PARSER_CLASSES': (
@@ -181,3 +187,12 @@ DEFAULT_FROM_EMAIL = 'no-reply@studenteventmanager.com'
 # EMAIL_USE_TLS = True 
 # EMAIL_HOST_USER = 'your-smtp-username'
 # EMAIL_HOST_PASSWORD = 'your-smtp-password'
+
+# The URL to redirect logged-in users to (your dashboard)
+LOGIN_REDIRECT_URL = 'dashboard_page'
+LOGIN_URL = 'users:login_page'
+CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]

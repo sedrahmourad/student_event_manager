@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Login - Student Event Manager{% endblock title %}
+{% block title %}Login - Activity Manager{% endblock title %}
 
 {% block content %}
 <div class="max-w-md mx-auto mt-20">
@@ -11,15 +11,20 @@
                 Welcome Back
             </h2>
             <p class="text-indigo-300 text-lg">Sign in to access your dashboard.</p>
+            
+            <!-- Message Box for Feedback/Errors -->
+            <div id="messageBox" class="hidden mt-4 p-3 rounded-lg text-sm transition-all duration-300" role="alert"></div>
+
         </div>
 
         <!-- Form for Login -->
-        <form id="login-form" method="post" class="space-y-6">
+        <form id="loginForm" class="space-y-6">
             {% csrf_token %}
             
             <div>
-                <label for="email" class="block text-sm font-semibold text-indigo-300 mb-1">Email Address</label>
-                <input type="email" id="email" name="email" required 
+                <!-- Input field name must match the API serializer's expected field (username or email). Assuming 'username' for the serializer -->
+                <label for="username" class="block text-sm font-semibold text-indigo-300 mb-1">Username or Email</label>
+                <input type="text" id="username" name="username" required 
                     class="mt-1 block w-full border border-gray-700 bg-gray-700 rounded-lg shadow-sm p-3 text-white 
                            focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out placeholder-gray-400">
             </div>
@@ -31,7 +36,7 @@
                            focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out placeholder-gray-400">
             </div>
 
-            <button type="submit" 
+            <button type="submit" id="loginButton"
                 class="w-full flex justify-center py-3 px-4 rounded-lg shadow-xl text-lg font-bold text-white 
                        bg-indigo-600 hover:bg-indigo-500 
                        focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500/50 transition duration-300 ease-in-out transform hover:scale-[1.01]">
@@ -41,8 +46,99 @@
 
         <p class="mt-6 text-center text-sm text-gray-400">
             New to StudentHub? 
-            <a href="{% url 'users:register' %}" class="font-bold text-indigo-400 hover:text-indigo-300 transition duration-150">Register an account</a>
+            <a href="{% url 'users:register_page' %}" class="font-bold text-indigo-400 hover:text-indigo-300 transition duration-150">Register an account</a>
         </p>
     </div>
 </div>
+
+<!-- JavaScript Logic Block -->
+<script>
+    // Utility function to get the CSRF token from the cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Simple replacement for alert/confirm
+    function messageBox(message, isError = true) {
+        const msgDiv = document.getElementById('messageBox');
+        if (!msgDiv) return;
+
+        msgDiv.textContent = message;
+        msgDiv.classList.remove('hidden', 'bg-green-700', 'bg-red-700');
+        if (isError) {
+            msgDiv.classList.add('bg-red-700', 'text-white');
+        } else {
+            msgDiv.classList.add('bg-green-700', 'text-white');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            messageBox('', false); // Clear previous messages
+            loginButton.disabled = true;
+            loginButton.textContent = 'Authenticating...';
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const csrftoken = getCookie('csrftoken');
+
+            // --- THIS IS THE CRITICAL FIX ---
+            // It MUST be the API path defined in users/urls.py
+            const apiLoginUrl = "/api/users/login/";
+
+            try {
+                const response = await fetch(apiLoginUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+
+                if (response.ok) {
+                    // Status 200 OK received. Session cookie set by the server.
+                    const data = await response.json();
+                    messageBox(`Success! Welcome, ${data.user.name}. Redirecting...`, false);
+                    
+                    // Django's session is now active. Handle the redirect.
+                    const nextParam = new URLSearchParams(window.location.search).get('next') || "{% url 'users:dashboard_page' %}";
+                    setTimeout(() => {
+                        window.location.href = nextParam;
+                    }, 500); 
+                } else {
+                    // Handle API validation errors (e.g., 400 Bad Request, invalid credentials)
+                    const errorData = await response.json();
+                    const errorMessage = errorData.non_field_errors 
+                                         ? errorData.non_field_errors[0] 
+                                         : errorData.detail || 'Invalid credentials. Please try again.';
+                    messageBox(`Login Error: ${errorMessage}`, true);
+                }
+            } catch (error) {
+                // This block catches network errors (CORS, incorrect URL, server offline)
+                console.error("Network Error or Fetch Problem:", error);
+                messageBox("A network error occurred. Please check your CORS setup or ensure the server is running.", true);
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Log In';
+            }
+        });
+    });
+</script>
 {% endblock content %}
+

@@ -16,10 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
+# Redirect root ("/") to register page
+def redirect_to_register(request):
+    return redirect("users:register_page")
 
 urlpatterns = [
+    # admin site
     path('admin/', admin.site.urls),
+    # Default route redirects to register page
+    path('', redirect_to_register, name='home'),
+    # Mount the users app under /api/users/
     path('api/users/', include('users.urls')),
-    path('api/events/', include('events.urls')),
-    path('api/registrations/', include('registration.urls')),
+
+    # Users (register, login, dashboard, etc.)
+    path('users/', include('users.urls', namespace='users')),
+    # Events (list, add, details, etc.)
+    path('events/', include(('events.urls', 'events'), namespace='events')),
+
+    # Registration API
+    path('api/registrations/', include(('registration.urls', 'registration'), namespace='registration')),
 ]
+

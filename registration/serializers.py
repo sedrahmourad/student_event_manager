@@ -4,8 +4,8 @@ class EventSummarySerializer(serializers.Serializer):
     #used to return summarized event data 
     title = serializers.CharField()
     description = serializers.CharField()
-    date = serializers.DateTimeField()
-    end_date = serializers.DateTimeField()
+    date = serializers.DateTimeField(allow_null=True)
+    end_date = serializers.DateTimeField(allow_null=True)
     location = serializers.CharField()
     category = serializers.CharField()
     event_id = serializers.IntegerField(source='pk')

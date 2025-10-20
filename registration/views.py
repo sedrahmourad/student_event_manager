@@ -18,51 +18,53 @@ class RegistrationListCreateView(generics.ListCreateAPIView):
     GET /api/registrations/ (Student only): List the student's registered events.
     """
     permission_classes = [IsAuthenticated, IsStudent]
-    
-    # For GET (List) requests: filter by current user and use the List Serializer
+
     def get_queryset(self):
-        # Filter registrations to only show the currently logged-in user's registrations
         return Registration.objects.filter(user=self.request.user)
 
     def get_serializer_class(self):
-        # Use different serializers based on the request method
         if self.request.method == 'POST':
             return RegistrationCreateSerializer
         return RegistrationListSerializer
 
-    def perform_create(self, serializer):
-        """
-        Custom creation logic for POST request:
-        1. Checks for event existence.
-        2. Ensures student hasn't registered already (via unique_together check).
-        3. Saves the registration object.
-        """
-        event_id = self.request.data.get('event_id')
-        
-        # 1. Check if the event exists
+    def create(self, request, *args, **kwargs):
+        """Custom POST logic with clean JSON responses."""
+        event_id = request.data.get('event_id')
+
+        # 1️⃣ Check if the event exists
         try:
             event = Event.objects.get(pk=event_id)
         except Event.DoesNotExist:
             return Response(
-                {'event_id': ['Event not found.']},
+                {'error': 'Event not found.'},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # 2. Attempt to create the registration
+        # 2️⃣ Try creating a registration
         try:
-            # Pass the currently authenticated user to the serializer for saving
-            serializer.save(user=self.request.user, event=event)
-        
-        except IntegrityError:
-            # Handles the unique_together constraint error (already registered)
+            registration = Registration.objects.create(
+                user=request.user,
+                event=event
+            )
+            serializer = RegistrationListSerializer(registration)
             return Response(
-                {'detail': 'You are already registered for this event.'},
+                {
+                    'message': 'Registration successful!',
+                    'registration': serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+        except IntegrityError:
+            # Student already registered
+            return Response(
+                {'error': 'You are already registered for this event.'},
                 status=status.HTTP_409_CONFLICT
             )
+
         except Exception as e:
-            # Generic error handling
             return Response(
-                {'detail': f'Registration failed: {str(e)}'},
+                {'error': f'Registration failed: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -73,23 +75,19 @@ class RegistrationCancelView(generics.DestroyAPIView):
     """
     permission_classes = [IsAuthenticated, IsStudent]
     queryset = Registration.objects.all()
-    lookup_field = 'pk' # The URL will pass the registration ID (pk)
+    lookup_field = 'pk'  # The URL will pass the registration ID (pk)
 
     def delete(self, request, *args, **kwargs):
         """
         Custom deletion logic: Ensures the student can only delete their own registration.
         """
-        # Retrieve the registration instance based on the URL ID
         registration = get_object_or_404(
-            self.get_queryset().filter(user=request.user), 
+            self.get_queryset().filter(user=request.user),
             pk=kwargs['pk']
         )
-        
-        # Perform deletion
         registration.delete()
-        
         return Response(
-            {'detail': 'Registration successfully cancelled.'},
-            status=status.HTTP_204_NO_CONTENT
+            {'detail': f'Registration for event \"{registration.event.title}\" cancelled successfully.'},
+            status=status.HTTP_200_OK
         )
 

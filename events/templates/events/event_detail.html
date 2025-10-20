@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="bg-white p-6 rounded shadow">
+  <h1 class="text-3xl font-bold text-indigo-600 mb-2">{{ event.title }}</h1>
+  <p class="text-gray-500 text-sm mb-4">{{ event.date|date:"F j, Y" }}</p>
+  <p>{{ event.description }}</p>
+  <a href="{% url 'events:events_list' %}" class="text-indigo-500 hover:underline mt-4 inline-block">← Back to all events</a>
+</article>
+{% endblock %}

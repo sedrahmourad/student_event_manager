@@ -1,15 +1,19 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Event
-from .serializers import EventSerializer # Assume you've created this
-from .permissions import isOrganizer, isOwnerAndOrganizer # Import the custom permissions
-# Create your views here.
+from .serializers import EventSerializer
+from .permissions import isOrganizer, isOwnerAndOrganizer
 
+
+# -----------------------------
+# 🔹 API ViewSet for Events
+# -----------------------------
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
+    queryset = Event.objects.all().order_by('-date')
     serializer_class = EventSerializer
-    # permissions 
+
+    # Permissions based on the action
     def get_permissions(self):
         if self.action in ['create']:
             permission_classes = [permissions.IsAuthenticated, isOrganizer]
@@ -17,21 +21,28 @@ class EventViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated, isOwnerAndOrganizer]
         else:
             permission_classes = [permissions.AllowAny]
-        return [permissions() for permission in permission_classes]
-# --- Filtering and Searching ---
-    
-    # 1. Allows filtering using query parameters like ?category=Tech or ?date=2025-10-01
+        return [permission() for permission in permission_classes]  # <-- FIXED (was self.permission_classes)
+
+    # Filtering, searching, and ordering setup
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    
-    # 2. Fields available for exact filtering
     filterset_fields = ['category', 'date', 'location']
-    
-    # 3. Fields available for fuzzy search (useful for title/description)
     search_fields = ['title', 'description', 'category']
-    
-    # --- Custom Logic ---
 
     def perform_create(self, serializer):
-        """Saves the organizer field to the event upon creation."""
-        # When an organizer creates an event, the 'organizer' field is automatically set to the request user.
+        """Automatically set the organizer to the current user when creating an event."""
         serializer.save(organizer=self.request.user)
+
+
+# -----------------------------
+# 🔹 HTML Template Views
+# -----------------------------
+def event_list_page(request):
+    """Render a list of all events for students."""
+    events = Event.objects.all().order_by('-date')
+    return render(request, 'events/events_list.html', {'events': events})
+
+
+def event_detail_page(request, event_id):
+    """Render details for a single event."""
+    event = get_object_or_404(Event, id=event_id)
+    return render(request, 'events/event_detail.html', {'event': event})
