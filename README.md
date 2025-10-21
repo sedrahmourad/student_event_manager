@@ -1,149 +1,238 @@
-📚 Student Event Manager API
-🌟 Project Overview
-The Student Event Manager is a web application designed to help university students easily discover and register for academic and interest-based events relevant to their major. The platform ensures students don't miss out on valuable opportunities that align with their career goals and passions.
+Perfect ✅
 
+Let’s merge **everything** — your working codebase (Users, Events, Registrations apps) and the planning documents (Part 1 + Part 2 PDFs) — into a **complete, professional README.md**.
 
-This repository contains the backend API built using Django and Django REST Framework (DRF).
+---
 
-🛠️ Technology Stack
-Backend Framework: Python (3.11+) and Django (5.x)
+# 📚 Student Event Manager API
 
-API Framework: Django REST Framework (DRF)
+A **Django + Django REST Framework (DRF)** project that helps **university students** discover, register for, and manage events related to their academic majors and interests — while enabling **organizers** to host and manage events.
 
-Database: SQLite (development) or PostgreSQL (production)
+---
 
-Authentication: Token-based Authentication (DRF's authtoken)
+## 🌟 Project Overview
 
-✨ Key Features
-The API supports a role-based system differentiating between Students and Organizers.
+**Student Event Manager** bridges the gap between students and relevant academic or extracurricular opportunities.
+It allows:
 
-1. User Management & Authentication 
+* 🧑‍🎓 **Students** → to find and register for events aligned with their major.
+* 🧑‍💼 **Organizers** → to create and manage their own events.
 
+---
 
-Role-Based Registration: Supports sign-up for both Students (requires major) and Organizers (requires organization_name).
+## 🛠️ Technology Stack
 
+| Layer            | Technology                                              |
+| ---------------- | ------------------------------------------------------- |
+| Language         | Python 3.11 +                                           |
+| Framework        | Django 5.x                                              |
+| API              | Django REST Framework (DRF)                             |
+| Database         | SQLite (for development) / PostgreSQL (for production)  |
+| Auth             | Token-based Authentication (`rest_framework.authtoken`) |
+| Filtering/Search | `django-filter`, DRF Search Filter, Ordering Filter     |
+| Frontend         | HTML Templates (for login, registration, dashboard)     |
 
+---
 
+## ✨ Core Features
 
-Login/Logout: Authenticates users and issues secure tokens.
+### 🔐 User Management & Authentication
 
+* **Role-based signup** for:
 
-Profile Management: Users can view and update their profile details.
+  * **Students** → requires `major`
+  * **Organizers** → requires `organization_name`
+* **Login / Logout**
+* **Profile Management** (view & update)
+* Token authentication via DRF AuthToken.
 
+### 🎫 Event Management
 
-2. Event Management (CRUD) 
+* **CRUD** (Create, Read, Update, Delete) for Events
+* **Filtering & Search** by `category`, `date`, `location`
+* **Organizer permissions** → only event owners can edit/delete
+* **Social integration (future)** → Likes and Comments
 
+### 🧾 Event Registration (Student-Only)
 
-Event Listing: Anyone can view the list of events.
+* Students can:
 
+  * **Register** for events (using event ID)
+  * **List** their registered events in a personal dashboard
+  * **Cancel** registrations
+* Prevents duplicate registrations.
 
+---
 
-Filtering: Events can be filtered by category (major) and date.
+## 🧩 Project Structure
 
+| App              | Purpose                                                         |
+| ---------------- | --------------------------------------------------------------- |
+| **users**        | Authentication, roles (Student / Organizer), profile management |
+| **events**       | Event CRUD, filtering, likes/comments                           |
+| **registration** | Track student registrations, cancel registrations               |
 
-Organizer Panel: Organizers can create, update, and delete their own events.
+---
 
+## 🗃️ Database Schema (Simplified)
 
+### `CustomUser`
 
+* `id`, `name`, `email`, `password`
+* `role` = [`student`, `organizer`]
+* `major` (for students)
+* `organization_name` (for organizers)
 
+### `Event`
 
-Social Integration (Future): Events support Likes and Comments for community engagement.
+* `id`, `title`, `description`, `location`
+* `date`, `end_date`, `category`
+* `organizer` (FK → User)
+* `likes`, `comments` (related fields)
 
-3. Event Registration (Student Only) 
+### `Registration`
 
+* `id`, `user` (FK → User)
+* `event` (FK → Event)
+* `timestamp`
 
-Registration: Students can register for an event using the event ID.
+---
 
+## 🔗 API Endpoints
 
+All API routes are prefixed with `/api/`.
 
-Dashboard View: Students can view a list of all their registered events.
+### 👥 Authentication & User Management
 
+| Method    | Endpoint               | Access        | Description                     |
+| --------- | ---------------------- | ------------- | ------------------------------- |
+| POST      | `/api/users/register/` | Public        | Register (Student or Organizer) |
+| POST      | `/api/users/login/`    | Public        | Login & return token            |
+| GET       | `/api/users/profile/`  | Auth Required | Retrieve user profile           |
+| PUT/PATCH | `/api/users/profile/`  | Auth Required | Update profile                  |
 
-Cancellation: Students can cancel their registration.
+**Example Bodies:**
 
-⚙️ Setup and Installation
-Follow these steps to get the project running locally.
+```json
+// Student
+{
+  "role": "student",
+  "name": "Sara",
+  "email": "sara@email.com",
+  "password": "123456",
+  "major": "CS"
+}
 
-Prerequisites
-Python 3.11+
+// Organizer
+{
+  "role": "organizer",
+  "name": "Tech Club",
+  "email": "club@email.com",
+  "password": "123456",
+  "organization_name": "Tech Hub"
+}
+```
 
-pip (Python package installer)
+---
 
-Installation Steps
-Clone the repository:
+### 🎟️ Events (Organizer & Public)
 
-Bash
+| Method    | Endpoint            | Access         | Description                             |
+| --------- | ------------------- | -------------- | --------------------------------------- |
+| GET       | `/api/events/`      | Public         | List events (+ filter by category/date) |
+| GET       | `/api/events/{id}/` | Public         | View event details                      |
+| POST      | `/api/events/`      | Organizer Only | Create a new event                      |
+| PUT/PATCH | `/api/events/{id}/` | Organizer Only | Update owned event                      |
+| DELETE    | `/api/events/{id}/` | Organizer Only | Delete owned event                      |
 
-git clone [Your GitHub Repo URL]
-cd student_event_manager
-Create and activate a virtual environment:
+**POST Example**
 
-Bash
+```json
+{
+  "title": "Hackathon 2025",
+  "description": "24-hour coding challenge",
+  "location": "Tech Hall",
+  "category": "Technology",
+  "date": "2025-11-01T09:00:00Z",
+  "end_date": "2025-11-02T09:00:00Z"
+}
+```
 
-python -m venv venv
-.\venv\Scripts\activate  # On Windows
-# source venv/bin/activate  # On Linux/macOS
-Install dependencies:
+---
 
-Bash
+### 🧍‍♀️ Registrations (Student Only)
 
-pip install -r requirements.txt
-# OR: pip install django djangorestframework django-filter [etc.]
-Run Migrations:
+| Method | Endpoint                          | Access       | Description                       |
+| ------ | --------------------------------- | ------------ | --------------------------------- |
+| POST   | `/api/registrations/`             | Student Only | Register for event via `event_id` |
+| GET    | `/api/registrations/`             | Student Only | View registered events            |
+| DELETE | `/api/registrations/{id}/cancel/` | Student Only | Cancel registration               |
 
-Bash
+**POST Example**
 
-python manage.py migrate
-Create a Superuser (Optional, for Admin Access):
+```json
+{
+  "event_id": 3
+}
+```
 
-Bash
+---
 
-python manage.py createsuperuser
-Run the development server:
 
-Bash
 
-python manage.py runserver
-The API will be available at http://127.0.0.1:8000/.
+The API is now available at [`http://127.0.0.1:8000/`](http://127.0.0.1:8000/)
 
-🔗 API Endpoints
-All endpoints are prefixed with /api/.
+---
 
-Feature	HTTP Method	Endpoint	Access	Description
-Register	POST	/api/users/register/	Public	
-Register as Student or Organizer.
+## 🧪 Testing the API (Postman)
 
-Login	POST	/api/users/login/	Public	
-Authenticate and return token.
+1. **Register a User**
 
-Profile	GET, PUT	/api/users/profile/	Auth Required	
-View/Update authenticated user's profile.
+   * POST → `/api/users/register/`
+   * Body → Student or Organizer payload
 
+2. **Login to Get Token**
 
-Events	GET, POST	/api/events/	Public (GET)	
-List all events. Create new event (Organizer only).
+   * POST → `/api/users/login/`
+   * Copy the returned `token`
 
+3. **Authenticate Requests**
 
-Event Detail	GET, PUT, DELETE	/api/events/{id}/	Public (GET)	
-View details. Update/Delete event (Owner Organizer only).
+   * In Postman, add header:
+     `Authorization: Token <your_token_here>`
 
+4. **Create Events** (as Organizer)
 
+5. **Register for Events** (as Student)
 
-Register	POST	/api/registrations/	Student Only	
-Register for an event.
+6. **Cancel a Registration**
 
-My Registrations	GET	/api/registrations/	Student Only	
-View registered events list.
+---
 
-Cancel Reg.	DELETE	/api/registrations/{id}/cancel/	Student Only	
-Cancel registration.
+## 🧭 Project Timeline
 
+| Part   | Focus                                               |
+| ------ | --------------------------------------------------- |
+| Part 1 | Idea & Planning                                     |
+| Part 2 | Design (ERD + API Endpoints)                        |
+| Part 3 | Setup Django Project & Models                       |
+| Part 4 | Implement CRUD & Role Permissions                   |
+| Part 5 | Final Testing & Documentation (Demo Video + README) |
 
-Export to Sheets
-🧪 Testing the API
-We recommend using Postman or Insomnia to test the API endpoints.
+---
 
-Obtain Token: Use POST /api/users/login/ to get an authentication token.
+## 🚀 Future Enhancements
 
-Use Token: For protected endpoints (Auth Required), set the request header:
-Authorization: Token <Your Auth Token>
+* 📍 Google Maps API integration (for event locations)
+* 📅 Google Calendar API (sync event dates)
+* ❤️ Likes & 💬 Comments system
+* 📧 Email notifications for upcoming events
+* 📊 Admin analytics dashboard
+
+---
+
+## 👨‍💻 Author
+
+**Sedrah Mourad**
+ALX Back End Track
+*Student Event Manager Capstone Project*
